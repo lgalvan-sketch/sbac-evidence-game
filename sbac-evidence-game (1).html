@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evidence Detective – Keep Municipal Pool Open</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&display=swap');
+
+  :root {
+    --ink: #1a1208;
+    --paper: #f5edd8;
+    --paper2: #ece3c8;
+    --water: #1b6fa8;
+    --water-light: #4a9fd4;
+    --water-pale: #d4eaf7;
+    --gold: #c8922a;
+    --gold-light: #e8b84b;
+    --red: #b83232;
+    --green: #2a7a3b;
+    --green-light: #e8f5eb;
+    --rule: #c8b898;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 27px,
+        rgba(100,80,40,0.07) 27px,
+        rgba(100,80,40,0.07) 28px
+      );
+  }
+
+  /* ── Header ─────────────────────────────────── */
+  header {
+    background: var(--water);
+    color: white;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 4px solid var(--gold);
+  }
+
+  .header-waves {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 40px; opacity: .25;
+  }
+
+  .header-inner {
+    max-width: 860px; margin: 0 auto; padding: 24px 24px 28px;
+    position: relative; z-index: 1;
+    display: flex; align-items: center; gap: 18px;
+  }
+
+  .pool-icon {
+    font-size: 3rem; filter: drop-shadow(0 2px 6px rgba(0,0,0,.3));
+    animation: bob 3s ease-in-out infinite;
+  }
+
+  @keyframes bob {
+    0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)}
+  }
+
+  .header-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 900;
+    line-height: 1.1;
+    text-shadow: 0 2px 8px rgba(0,0,0,.3);
+  }
+
+  .header-text .sub {
+    font-size: .85rem; opacity: .85; margin-top: 4px; font-style: italic;
+  }
+
+  .standard-badge {
+    margin-top: 8px;
+    display: inline-block;
+    background: var(--gold);
+    color: var(--ink);
+    font-size: .72rem;
+    font-family: 'Source Serif 4', serif;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: .04em;
+  }
+
+  /* ── Progress bar ─────────────────────────────── */
+  .progress-bar-wrap {
+    background: var(--paper2); border-bottom: 2px solid var(--rule); padding: 10px 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .progress-label { font-size: .78rem; color: #7a6a50; white-space: nowrap; }
+  .progress-track {
+    flex: 1; height: 10px; background: #ddd4bc; border-radius: 99px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--water), var(--water-light));
+    border-radius: 99px; transition: width .6s ease;
+  }
+  .score-display {
+    font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700;
+    color: var(--water); white-space: nowrap;
+  }
+
+  /* ── Main layout ──────────────────────────────── */
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  /* ── Phase cards ──────────────────────────────── */
+  .phase { display: none; }
+  .phase.active { display: block; animation: fadein .4s ease; }
+  @keyframes fadein { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .card {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    box-shadow: 2px 4px 18px rgba(0,0,0,.08);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 5px; background: var(--water); border-radius: 4px 0 0 4px;
+  }
+
+  .card.gold::before { background: var(--gold); }
+  .card.green::before { background: var(--green); }
+  .card.red-stripe::before { background: var(--red); }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem; font-weight: 700;
+    margin-bottom: 12px; color: var(--water);
+  }
+
+  h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
+
+  p { line-height: 1.7; font-size: .97rem; margin-bottom: 10px; }
+
+  /* ── Letter display ────────────────────────────── */
+  .letter-box {
+    background: #fffdf5;
+    border: 1px solid #d4c8a8;
+    border-radius: 3px;
+    padding: 22px 26px;
+    font-size: .92rem;
+    line-height: 1.75;
+    max-height: 340px;
+    overflow-y: auto;
+    margin: 16px 0;
+    position: relative;
+  }
+
+  .letter-box::before {
+    content: '📰 Student Draft';
+    display: block;
+    font-size: .72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: #8a7a58;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .letter-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; font-weight: 700; text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .letter-body { color: #2a2010; }
+
+  .highlight-claim {
+    background: linear-gradient(120deg, #fff5c0 0%, #ffe97a 100%);
+    padding: 2px 4px; border-radius: 2px;
+  }
+
+  .highlight-gap {
+    background: linear-gradient(120deg, #ffd5d5 0%, #ffb3b3 100%);
+    padding: 2px 4px; border-radius: 2px;
+    border-bottom: 2px dashed var(--red);
+  }
+
+  /* ── Answer choices ────────────────────────────── */
+  .choices { display: grid; gap: 14px; margin-top: 18px; }
+
+  .choice-btn {
+    background: white;
+    border: 2px solid var(--rule);
+    border-radius: 6px;
+    padding: 16px 20px;
+    text-align: left;
+    cursor: pointer;
+    transition: all .2s;
+    font-family: 'Source Serif 4', serif;
+    font-size: .94rem;
+    line-height: 1.6;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .choice-btn::before {
+    content: attr(data-letter);
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--paper2);
+    color: var(--ink);
+    font-weight: 700;
+    font-size: .85rem;
+    margin-right: 12px;
+    transition: all .2s;
+    flex-shrink: 0;
+    vertical-align: middle;
+  }
+
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--water);
+    background: var(--water-pale);
+    transform: translateX(3px);
+  }
+
+  .choice-btn:hover:not(:disabled)::before {
+    background: var(--water); color: white;
+  }
+
+  .choice-btn.selected {
+    border-color: var(--water);
+    background: var(--water-pale);
+  }
+
+  .choice-btn.correct {
+    border-color: var(--green);
+    background: var(--green-light);
+    animation: pop .3s ease;
+  }
+
+  .choice-btn.correct::before { background: var(--green); color: white; }
+
+  .choice-btn.wrong {
+    border-color: var(--red);
+    background: #fff0f0;
+    opacity: .8;
+  }
+
+  .choice-btn.wrong::before { background: var(--red); color: white; }
+
+  @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.02)} 100%{transform:scale(1)} }
+
+  .choice-btn:disabled { cursor: default; }
+
+  /* ── Feedback ──────────────────────────────────── */
+  .feedback {
+    display: none;
+    padding: 18px 22px;
+    border-radius: 6px;
+    margin-top: 16px;
+    font-size: .93rem;
+    line-height: 1.65;
+    border-left: 5px solid;
+    animation: fadein .35s ease;
+  }
+
+  .feedback.correct { background: var(--green-light); border-color: var(--green); }
+  .feedback.wrong { background: #fff0f0; border-color: var(--red); }
+  .feedback .icon { font-size: 1.4rem; margin-bottom: 6px; display: block; }
+  .feedback strong { display: block; font-size: 1rem; margin-bottom: 6px; }
+
+  /* ── Buttons ─────────────────────────────────── */
+  .btn {
+    display: inline-block;
+    padding: 12px 28px;
+    border: none; border-radius: 4px;
+    font-family: 'Source Serif 4', serif;
+    font-size: .95rem; font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    letter-spacing: .02em;
+  }
+
+  .btn-primary {
+    background: var(--water);
+    color: white;
+    box-shadow: 0 2px 8px rgba(27,111,168,.35);
+  }
+
+  .btn-primary:hover { background: #155d8e; transform: translateY(-1px); }
+
+  .btn-gold {
+    background: var(--gold);
+    color: var(--ink);
+    box-shadow: 0 2px 8px rgba(200,146,42,.35);
+  }
+
+  .btn-gold:hover { background: #b07d20; transform: translateY(-1px); }
+
+  .btn-row { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  /* ── Mini-lesson ─────────────────────────────── */
+  .tip-box {
+    background: linear-gradient(135deg, #e8f3fb, #d4eaf7);
+    border: 1px solid #aacfe8;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: .9rem;
+    line-height: 1.65;
+  }
+
+  .tip-box .tip-title {
+    font-weight: 700; font-size: .8rem;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--water); margin-bottom: 8px;
+  }
+
+  /* ── Results screen ────────────────────────────── */
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px; margin: 20px 0;
+  }
+
+  .result-stat {
+    background: var(--paper2);
+    border-radius: 6px; padding: 16px 12px;
+    text-align: center; border: 1px solid var(--rule);
+  }
+
+  .result-stat .big { font-family: 'Playfair Display', serif; font-size: 2.4rem; font-weight: 900; color: var(--water); }
+  .result-stat .label { font-size: .8rem; color: #7a6a50; margin-top: 4px; }
+
+  .medal {
+    font-size: 3rem; text-align: center; display: block;
+    animation: spin .6s cubic-bezier(.68,-.55,.27,1.55) forwards;
+    transform: scale(0);
+  }
+  @keyframes spin { to { transform: scale(1) rotate(360deg); } }
+
+  /* ── Drag-drop mini game ───────────────────────── */
+  .drag-area {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    margin: 18px 0;
+  }
+
+  .drag-column { flex: 1; min-width: 200px; }
+  .drag-column h4 {
+    font-size: .8rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; margin-bottom: 10px;
+    padding-bottom: 6px; border-bottom: 2px solid var(--rule);
+  }
+
+  .drag-item {
+    background: white; border: 2px solid var(--rule);
+    border-radius: 5px; padding: 10px 14px;
+    margin-bottom: 8px; cursor: grab;
+    font-size: .88rem; line-height: 1.5;
+    transition: all .15s; user-select: none;
+  }
+
+  .drag-item:hover { border-color: var(--water); box-shadow: 0 2px 8px rgba(27,111,168,.15); }
+  .drag-item.dragging { opacity: .5; cursor: grabbing; }
+
+  .drop-zone {
+    min-height: 80px; background: #f8f5ed;
+    border: 2px dashed var(--rule); border-radius: 6px;
+    padding: 10px; transition: all .2s;
+  }
+
+  .drop-zone.over { border-color: var(--water); background: var(--water-pale); }
+  .drop-zone.filled { border-style: solid; border-color: var(--green); background: var(--green-light); }
+
+  /* ── Scrollbar styling ─────────────────────────── */
+  .letter-box::-webkit-scrollbar { width: 6px; }
+  .letter-box::-webkit-scrollbar-track { background: var(--paper2); border-radius: 3px; }
+  .letter-box::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+
+  /* ── Responsive ─────────────────────────────── */
+  @media (max-width: 560px) {
+    .card { padding: 20px 18px; }
+    .header-inner { flex-direction: column; text-align: center; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="pool-icon">🏊</div>
+    <div class="header-text">
+      <h1>Evidence Detective</h1>
+      <div class="sub">Keep Municipal Pool Open – Writing Evidence Challenge</div>
+      <div class="standard-badge">CA SBAC · Standard 6.W.1b · Supporting Claims with Evidence</div>
+    </div>
+  </div>
+  <svg class="header-waves" viewBox="0 0 1200 40" preserveAspectRatio="none">
+    <path d="M0,20 C200,40 400,0 600,20 C800,40 1000,0 1200,20 L1200,40 L0,40 Z" fill="white" opacity=".3"/>
+    <path d="M0,30 C300,10 600,40 900,20 C1050,10 1150,25 1200,30 L1200,40 L0,40 Z" fill="white" opacity=".2"/>
+  </svg>
+</header>
+
+<div class="progress-bar-wrap">
+  <span class="progress-label">Progress</span>
+  <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <span class="score-display" id="scoreDisplay">0 pts</span>
+</div>
+
+<main>
+
+  <!-- ══ PHASE 0: Intro ══ -->
+  <div class="phase active" id="phase0">
+    <div class="card gold">
+      <h2>🔎 Your Mission</h2>
+      <p>A 6th-grade student named <strong>Jane Garcia</strong> wrote a letter to her local newspaper arguing the community swimming pool should stay open. Her letter has a <em>gap</em> — one body paragraph makes a claim but doesn't have strong enough evidence to back it up.</p>
+      <p>Your job as an <strong>Evidence Detective</strong> is to read her letter, identify the weak spot, and choose the best sentence(s) to strengthen her argument.</p>
+
+      <div class="tip-box">
+        <div class="tip-title">⚡ Standard 6.W.1b — What You Need to Know</div>
+        Good argument writers <strong>support their claim with relevant evidence</strong>. Evidence must:
+        <ul style="margin-top:8px;padding-left:20px;line-height:1.9">
+          <li><strong>Connect</strong> directly to the claim in that paragraph</li>
+          <li><strong>Strengthen</strong> the argument (not just add info)</li>
+          <li><strong>Stay on topic</strong> (not introduce unrelated ideas)</li>
+        </ul>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goPhase(1)">Start Reading the Letter →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PHASE 1: Read the Letter ══ -->
+  <div class="phase" id="phase1">
+    <div class="card">
+      <h2>📄 Read Jane's Letter</h2>
+      <p>Read carefully. Look for the paragraph that makes a claim but seems to be <span class="highlight-gap">missing strong evidence</span>.</p>
+
+      <div class="letter-box">
+        <div class="letter-title">Keep Municipal Pool Open</div>
+        <p style="text-align:center;font-style:italic;margin-bottom:14px;">Dear Editor,</p>
+        <div class="letter-body">
+          <p>I am writing to argue that <span class="highlight-claim">our local swimming pool should be kept open</span>. I know that there are some who believe that we should close this pool and build two smaller pools, one on the north side and one on the south side of town. Although this sounds like a good idea, it doesn't address the value of our current community swimming pool.</p>
+
+          <p><strong>First of all,</strong> the swimming pool is a real community pool. Because it is the only pool in town, everyone comes here to swim. This is where you meet your friends during the summer. Parents meet their friends here too. It provides our community with a common place for recreation and socialization.</p>
+
+          <p><strong>Second,</strong> this swimming pool was built by the Works Project Administration (WPA). Almost every community received a new park, bridge, or school as a result of this agency, which put millions of people to work during the 1930s. The WPA built a swimming pool for our town. This is a part of our town's history, as well as our country's history.</p>
+
+          <p><strong>Finally,</strong> our swimming pool is <span class="highlight-gap">one of the largest pools in the area. It occupies one-half acre in the center of the town's park.</span></p>
+
+          <p><span class="highlight-claim">Our swimming pool has community, historical, and economic value.</span> Please consider keeping it open.</p>
+          <p style="margin-top:12px;">Sincerely,<br><em>Jane Garcia</em></p>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <div class="tip-title">🔍 Detective Hint</div>
+        Jane's conclusion mentions <strong>"economic value"</strong> — but do you see any evidence for that in the body paragraphs? Look especially at the <strong>final body paragraph</strong> (the "Finally" paragraph). Does it prove economic value?
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goPhase(2)">I've Read It — Next Step →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PHASE 2: Identify the Gap ══ -->
+  <div class="phase" id="phase2">
+    <div class="card">
+      <h2>🧩 Step 1 — Spot the Weak Paragraph</h2>
+      <p>Jane's conclusion says the pool has <em>"community, historical, and <strong>economic value</strong>."</em></p>
+      <p>Which paragraph is <strong>supposed to support economic value</strong> but doesn't give strong evidence for it?</p>
+
+      <div class="choices" id="gapChoices">
+        <button class="choice-btn" data-letter="A" onclick="checkGap(this, false)">
+          The "First of all" paragraph — it talks about community and socializing.
+        </button>
+        <button class="choice-btn" data-letter="B" onclick="checkGap(this, false)">
+          The "Second" paragraph — it talks about the WPA and history.
+        </button>
+        <button class="choice-btn" data-letter="C" onclick="checkGap(this, true)">
+          The "Finally" paragraph — it only says the pool is big, but never shows economic value.
+        </button>
+        <button class="choice-btn" data-letter="D" onclick="checkGap(this, false)">
+          The opening paragraph — Jane's claim isn't clear enough.
+        </button>
+      </div>
+
+      <div class="feedback" id="gapFeedback"></div>
+    </div>
+  </div>
+
+  <!-- ══ PHASE 3: Evaluate each choice ══ -->
+  <div class="phase" id="phase3">
+    <div class="card">
+      <h2>🔬 Step 2 — Evaluate the Evidence Choices</h2>
+      <p>Jane needs a sentence that <strong>supports economic value</strong> in the "Finally" paragraph. Read each option below. Click each one to analyze it — is it <em>relevant</em>, <em>irrelevant</em>, or <em>off-topic</em>?</p>
+
+      <div id="evalChoices">
+        <div class="eval-item" id="eval-A">
+          <div class="choice-btn" data-letter="A" onclick="evalChoice('A')" style="cursor:pointer">
+            <span style="vertical-align:middle">People from surrounding towns come here to swim because our pool is so big and has three diving boards. Because many people choose to swim here, this has made money for our community that has helped maintain the pool and the entire park.</span>
+          </div>
+          <div class="feedback" id="evalFb-A"></div>
+        </div>
+        <div class="eval-item" id="eval-B">
+          <div class="choice-btn" data-letter="B" onclick="evalChoice('B')" style="cursor:pointer">
+            <span style="vertical-align:middle">Although some people have complained that the pool is too big and takes up too much space in the park, this is not true. The park is large enough for other recreational activities, such as baseball and tennis.</span>
+          </div>
+          <div class="feedback" id="evalFb-B"></div>
+        </div>
+        <div class="eval-item" id="eval-C">
+          <div class="choice-btn" data-letter="C" onclick="evalChoice('C')" style="cursor:pointer">
+            <span style="vertical-align:middle">One problem with such a big swimming pool is that it takes a long time for the water to warm. At the beginning of the summer, the water is so cold that it almost takes your breath away. By July, however, the water is much warmer.</span>
+          </div>
+          <div class="feedback" id="evalFb-C"></div>
+        </div>
+        <div class="eval-item" id="eval-D">
+          <div class="choice-btn" data-letter="D" onclick="evalChoice('D')" style="cursor:pointer">
+            <span style="vertical-align:middle">Swimming is one of the best forms of exercise there is. It uses all of your muscle groups and burns many calories. More people in our community should consider swimming in our pool every day so that they can benefit.</span>
+          </div>
+          <div class="feedback" id="evalFb-D"></div>
+        </div>
+      </div>
+
+      <div id="phase3Next" style="display:none">
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="goPhase(4)">Great! Now make your final choice →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PHASE 4: Final answer ══ -->
+  <div class="phase" id="phase4">
+    <div class="card">
+      <h2>✅ Step 3 — Final Answer</h2>
+      <p>Based on your analysis, which sentence(s) give the <strong>best evidence</strong> to improve support for Jane's claim about the pool's <strong>economic value</strong>?</p>
+      <p style="font-size:.87rem;color:#7a6a50;margin-top:-4px;">This is the real SBAC question — choose wisely!</p>
+
+      <div class="choices" id="finalChoices">
+        <button class="choice-btn" data-letter="A" onclick="checkFinal(this, true)">
+          <strong>A.</strong> People from surrounding towns come here to swim… this has made money for our community that has helped maintain the pool and the entire park.
+        </button>
+        <button class="choice-btn" data-letter="B" onclick="checkFinal(this, false)">
+          <strong>B.</strong> Although some people have complained the pool is too big… The park is large enough for other recreational activities.
+        </button>
+        <button class="choice-btn" data-letter="C" onclick="checkFinal(this, false)">
+          <strong>C.</strong> One problem with such a big swimming pool is that it takes a long time for the water to warm…
+        </button>
+        <button class="choice-btn" data-letter="D" onclick="checkFinal(this, false)">
+          <strong>D.</strong> Swimming is one of the best forms of exercise there is. It uses all of your muscle groups and burns many calories…
+        </button>
+      </div>
+
+      <div class="feedback" id="finalFeedback"></div>
+    </div>
+  </div>
+
+  <!-- ══ PHASE 5: Write your own! ══ -->
+  <div class="phase" id="phase5">
+    <div class="card green">
+      <h2>✍️ Bonus: Write Your Own Evidence</h2>
+      <p>You've found the right answer! Now practice the skill yourself. Jane's paragraph says the pool is "one of the largest pools in the area." Write <strong>1–2 sentences of evidence</strong> that could support the pool's <em>economic value</em>.</p>
+
+      <div class="tip-box">
+        <div class="tip-title">💡 Evidence Starter Ideas</div>
+        Think about: Does the pool bring money in? Does it save money? Does it create jobs? Does its size attract visitors?
+      </div>
+
+      <textarea id="writingInput" placeholder="Write your evidence here… (e.g. Because our pool is so large, it draws visitors from neighboring towns, bringing spending to local businesses.)"
+        style="width:100%;min-height:110px;padding:14px;border:2px solid var(--rule);border-radius:5px;font-family:'Source Serif 4',serif;font-size:.93rem;line-height:1.65;resize:vertical;margin:14px 0;background:#fffdf5;color:var(--ink);"
+        oninput="checkWriting()"></textarea>
+
+      <div id="writingFeedback" style="display:none" class="tip-box" style="margin-top:0">
+        <div class="tip-title">🤖 Quick Check</div>
+        <span id="writingFeedbackText"></span>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goPhase(6)">See My Results →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PHASE 6: Results ══ -->
+  <div class="phase" id="phase6">
+    <div class="card gold">
+      <span class="medal" id="medal">🏅</span>
+      <h2 style="text-align:center;margin-top:14px;" id="resultTitle">Mission Complete!</h2>
+
+      <div class="result-grid">
+        <div class="result-stat">
+          <div class="big" id="finalScore">0</div>
+          <div class="label">Points Earned</div>
+        </div>
+        <div class="result-stat">
+          <div class="big" id="stepsCorrect">0/3</div>
+          <div class="label">Steps Correct</div>
+        </div>
+        <div class="result-stat">
+          <div class="big">6.W.1b</div>
+          <div class="label">Standard Practiced</div>
+        </div>
+      </div>
+
+      <div id="resultSummary" style="margin:16px 0;line-height:1.75;font-size:.95rem;"></div>
+
+      <div class="tip-box">
+        <div class="tip-title">📚 Key Takeaway — Standard 6.W.1b</div>
+        When you write an argument, every body paragraph needs:
+        <ol style="margin-top:8px;padding-left:20px;line-height:1.9">
+          <li>A <strong>claim</strong> (what you're arguing)</li>
+          <li><strong>Evidence</strong> that directly supports THAT specific claim</li>
+          <li>Evidence that is <strong>relevant</strong> and <strong>connected</strong> — not off-topic</li>
+        </ol>
+        Jane's "economic value" claim needed evidence showing the pool <em>generates money</em> — that's exactly what Choice A provided!
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="restart()">🔄 Play Again</button>
+        <button class="btn btn-gold" onclick="goPhase(1)">📄 Re-read the Letter</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────
+  let score = 0;
+  let stepsCorrect = 0;
+  let currentPhase = 0;
+  let gapDone = false;
+  let evalDone = { A: false, B: false, C: false, D: false };
+  let finalDone = false;
+  let totalPhases = 6;
+
+  // ── Phase navigation ───────────────────────────────────────────
+  function goPhase(n) {
+    document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
+    document.getElementById('phase' + n).classList.add('active');
+    currentPhase = n;
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateProgress() {
+    const pct = (currentPhase / totalPhases) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('scoreDisplay').textContent = score + ' pts';
+  }
+
+  // ── Phase 2: Identify gap ──────────────────────────────────────
+  function checkGap(btn, correct) {
+    if (gapDone) return;
+    gapDone = true;
+    document.querySelectorAll('#gapChoices .choice-btn').forEach(b => b.disabled = true);
+
+    const fb = document.getElementById('gapFeedback');
+    fb.style.display = 'block';
+
+    if (correct) {
+      btn.classList.add('correct');
+      score += 30;
+      stepsCorrect++;
+      fb.className = 'feedback correct';
+      fb.innerHTML = `<span class="icon">🎯</span><strong>Correct!</strong> The "Finally" paragraph only says the pool is large — but it never explains <em>why</em> size matters economically. Jane's conclusion even claims "economic value," but that paragraph gives no evidence for it. That's the gap you need to fix!`;
+      setTimeout(() => goPhase(3), 1800);
+    } else {
+      btn.classList.add('wrong');
+      // show correct
+      document.querySelectorAll('#gapChoices .choice-btn')[2].classList.add('correct');
+      fb.className = 'feedback wrong';
+      fb.innerHTML = `<span class="icon">💡</span><strong>Not quite.</strong> Look at Jane's conclusion — she says the pool has "economic value." Now find the body paragraph that should prove economic value. The "Finally" paragraph mentions size, but never connects that to money or economics. That's the gap!`;
+      setTimeout(() => goPhase(3), 2500);
+    }
+    updateProgress();
+  }
+
+  // ── Phase 3: Evaluate choices ──────────────────────────────────
+  const evalData = {
+    A: {
+      correct: true,
+      verdict: '✅ STRONG EVIDENCE',
+      cls: 'correct',
+      text: `This <strong>directly supports economic value</strong>. It explains: big pool → visitors from other towns → money flows into the community → pool is maintained. This is a complete chain of evidence connecting the pool's size to economic benefit!`
+    },
+    B: {
+      correct: false,
+      verdict: '❌ OFF TOPIC',
+      cls: 'wrong',
+      text: `This is a <strong>counterargument rebuttal</strong>, not evidence of economic value. It tries to defend the pool's size, but it doesn't show how the pool makes or saves money. It changes the subject.`
+    },
+    C: {
+      correct: false,
+      verdict: '❌ HURTS THE ARGUMENT',
+      cls: 'wrong',
+      text: `This actually <strong>introduces a problem</strong> with the pool (cold water). A persuasive letter shouldn't admit weaknesses without addressing them. This weakens Jane's argument rather than supporting it.`
+    },
+    D: {
+      correct: false,
+      verdict: '❌ WRONG TYPE OF EVIDENCE',
+      cls: 'wrong',
+      text: `While swimming is great exercise, this is <strong>health evidence, not economic evidence</strong>. Jane's paragraph is supposed to support the pool's economic value, not its fitness benefits. This is off-topic for the "Finally" paragraph.`
+    }
+  };
+
+  let evalCount = 0;
+
+  function evalChoice(letter) {
+    if (evalDone[letter]) return;
+    evalDone[letter] = true;
+    evalCount++;
+
+    const data = evalData[letter];
+    const btn = document.querySelector(`#eval-${letter} .choice-btn`);
+    const fb = document.getElementById(`evalFb-${letter}`);
+
+    btn.classList.add(data.cls);
+    btn.style.cursor = 'default';
+    fb.className = 'feedback ' + (data.correct ? 'correct' : 'wrong');
+    fb.innerHTML = `<strong>${data.verdict}</strong> ${data.text}`;
+    fb.style.display = 'block';
+
+    if (evalCount === 4) {
+      score += 20;
+      updateProgress();
+      document.getElementById('phase3Next').style.display = 'block';
+    }
+  }
+
+  // ── Phase 4: Final answer ──────────────────────────────────────
+  function checkFinal(btn, correct) {
+    if (finalDone) return;
+    finalDone = true;
+    document.querySelectorAll('#finalChoices .choice-btn').forEach(b => b.disabled = true);
+
+    const fb = document.getElementById('finalFeedback');
+    fb.style.display = 'block';
+
+    if (correct) {
+      btn.classList.add('correct');
+      score += 50;
+      stepsCorrect += 2;
+      fb.className = 'feedback correct';
+      fb.innerHTML = `<span class="icon">🏆</span><strong>Correct! This is the SBAC answer.</strong> Choice A is the best evidence because it directly links the pool's size to economic benefit: large pool → attracts visitors → generates revenue for the community. It supports the claim that the pool has "economic value" — exactly what the paragraph needed.`;
+      updateProgress();
+      setTimeout(() => goPhase(5), 2000);
+    } else {
+      btn.classList.add('wrong');
+      document.querySelectorAll('#finalChoices .choice-btn')[0].classList.add('correct');
+      fb.className = 'feedback wrong';
+      fb.innerHTML = `<span class="icon">💡</span><strong>Not quite — the correct answer is A.</strong> Remember: the "Finally" paragraph needs evidence for <em>economic value</em>. Choice A is the only option that shows the pool makes money for the community. Let's review why the others don't work, then try the bonus activity!`;
+      updateProgress();
+      setTimeout(() => goPhase(5), 2500);
+    }
+  }
+
+  // ── Phase 5: Writing ───────────────────────────────────────────
+  const economicWords = ['money', 'economic', 'revenue', 'income', 'visitors', 'attract', 'business', 'job', 'employ', 'fund', 'cost', 'save', 'profit', 'tourism', 'spending', 'earn', 'benefit financially', 'tax'];
+
+  function checkWriting() {
+    const text = document.getElementById('writingInput').value.toLowerCase();
+    const fb = document.getElementById('writingFeedback');
+    const fbText = document.getElementById('writingFeedbackText');
+
+    if (text.length < 30) {
+      fb.style.display = 'none';
+      return;
+    }
+
+    fb.style.display = 'block';
+
+    const hasEconomicWord = economicWords.some(w => text.includes(w));
+    const hasPoolRef = text.includes('pool') || text.includes('swim');
+
+    if (hasEconomicWord && hasPoolRef) {
+      fbText.innerHTML = '✅ <strong>Great job!</strong> Your evidence mentions economic impact and connects it to the pool. That\'s exactly what 6.W.1b asks for — relevant evidence that directly supports your claim!';
+      if (!window.writingBonusGiven) {
+        window.writingBonusGiven = true;
+        score += 20;
+        stepsCorrect++;
+        updateProgress();
+      }
+    } else if (hasEconomicWord) {
+      fbText.innerHTML = '👍 <strong>Getting there!</strong> You mentioned economic ideas — now connect them specifically to the swimming pool to make your evidence stronger.';
+    } else if (hasPoolRef) {
+      fbText.innerHTML = '🔄 <strong>Tip:</strong> You mentioned the pool — now add economic ideas like money, visitors, revenue, or jobs to support the "economic value" claim.';
+    } else {
+      fbText.innerHTML = '💬 Keep going! Try to include both the pool <em>and</em> an economic idea (money, jobs, visitors, revenue, etc.)';
+    }
+  }
+
+  // ── Phase 6: Results ───────────────────────────────────────────
+  function showResults() {
+    const medals = ['🥉', '🥈', '🥇', '🏆'];
+    let medalIdx = 0;
+    if (score >= 100) medalIdx = 3;
+    else if (score >= 80) medalIdx = 2;
+    else if (score >= 50) medalIdx = 1;
+
+    document.getElementById('medal').textContent = medals[medalIdx];
+    document.getElementById('finalScore').textContent = score;
+    document.getElementById('stepsCorrect').textContent = stepsCorrect + '/3';
+
+    const summaries = [
+      'Keep practicing! Re-read the letter and try to find where Jane needs help.',
+      'Good effort! You understand the basics of finding evidence gaps.',
+      'Well done! You can identify weak evidence and choose better support.',
+      'Outstanding! You\'re an Evidence Detective — you nailed every step!'
+    ];
+    document.getElementById('resultSummary').innerHTML = `<strong>${summaries[medalIdx]}</strong><br><br>You identified the "Finally" paragraph as the weak spot, analyzed all four choices, and recognized that <strong>Choice A</strong> is the best evidence because it directly connects the pool's size to economic value — exactly what standard 6.W.1b requires.`;
+    document.getElementById('resultTitle').textContent = medalIdx === 3 ? '🏆 Evidence Expert!' : medalIdx >= 2 ? '⭐ Great Work!' : 'Mission Complete!';
+  }
+
+  function restart() {
+    score = 0; stepsCorrect = 0; gapDone = false;
+    evalDone = { A: false, B: false, C: false, D: false };
+    evalCount = 0; finalDone = false; window.writingBonusGiven = false;
+
+    // Reset UI
+    document.querySelectorAll('.choice-btn').forEach(b => { b.classList.remove('correct','wrong','selected'); b.disabled = false; });
+    document.querySelectorAll('.feedback').forEach(f => f.style.display = 'none');
+    document.getElementById('phase3Next').style.display = 'none';
+    document.getElementById('writingInput').value = '';
+    document.getElementById('writingFeedback').style.display = 'none';
+    updateProgress();
+    goPhase(0);
+  }
+
+  // Override goPhase(6) to also show results
+  const _origGoPhase = goPhase;
+  window.goPhase = function(n) {
+    if (n === 6) showResults();
+    _origGoPhase(n);
+  };
+</script>
+</body>
+</html>
