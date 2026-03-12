@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amy's Dirt Moving Adventure</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+  :root {
+    --dirt: #8B5E3C;
+    --soil: #A0714F;
+    --grass: #5A9E3A;
+    --sky: #87CEEB;
+    --sun: #FFD700;
+    --bucket: #4A90D9;
+    --bucket-dark: #2C6BAC;
+    --correct: #4CAF50;
+    --wrong: #E53935;
+    --highlight: #FF9800;
+    --white: #FFFDF7;
+    --text-dark: #2D1A0A;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(180deg, #87CEEB 0%, #B0E0FF 40%, #5A9E3A 40%, #4a8a2e 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    color: var(--text-dark);
+  }
+
+  /* SUN */
+  .sun {
+    position: fixed;
+    top: 20px;
+    right: 60px;
+    width: 70px;
+    height: 70px;
+    background: radial-gradient(circle, #FFE040, #FFD700);
+    border-radius: 50%;
+    box-shadow: 0 0 40px #FFD70088, 0 0 80px #FFD70044;
+    animation: pulse-sun 3s ease-in-out infinite;
+    z-index: 0;
+  }
+  @keyframes pulse-sun {
+    0%,100% { box-shadow: 0 0 40px #FFD70088, 0 0 80px #FFD70044; }
+    50% { box-shadow: 0 0 60px #FFD700aa, 0 0 120px #FFD70066; }
+  }
+
+  /* CLOUDS */
+  .cloud {
+    position: fixed;
+    background: white;
+    border-radius: 50px;
+    opacity: 0.85;
+    z-index: 0;
+  }
+  .cloud::before, .cloud::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+  }
+  .cloud-1 { width: 120px; height: 40px; top: 40px; left: 10%; animation: drift 18s linear infinite; }
+  .cloud-1::before { width: 60px; height: 60px; top: -30px; left: 15px; }
+  .cloud-1::after { width: 45px; height: 45px; top: -20px; left: 55px; }
+  .cloud-2 { width: 90px; height: 30px; top: 80px; left: 45%; animation: drift 25s linear infinite 5s; }
+  .cloud-2::before { width: 45px; height: 45px; top: -22px; left: 10px; }
+  .cloud-2::after { width: 35px; height: 35px; top: -15px; left: 45px; }
+  @keyframes drift { from { transform: translateX(-200px); } to { transform: translateX(110vw); } }
+
+  /* MAIN LAYOUT */
+  .game-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #8B5E3C, #6B3F20);
+    border-radius: 20px;
+    padding: 16px 24px;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+    border: 3px solid #A0714F;
+  }
+  .header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--sun);
+    text-shadow: 2px 3px 0 #4a2800;
+    letter-spacing: 1px;
+  }
+  .header p {
+    color: #F5DEB3;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+
+  /* PROGRESS BAR */
+  .progress-section {
+    background: rgba(255,255,255,0.85);
+    border-radius: 16px;
+    padding: 12px 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 2px solid rgba(255,255,255,0.9);
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: var(--dirt);
+    margin-bottom: 6px;
+  }
+  .progress-bar-bg {
+    background: #D4B896;
+    border-radius: 20px;
+    height: 22px;
+    overflow: hidden;
+    border: 2px solid #8B5E3C;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #5A9E3A, #7BC74E);
+    border-radius: 20px;
+    transition: width 0.6s cubic-bezier(.34,1.56,.64,1);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 6px;
+  }
+  .progress-bar-fill span {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: white;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+  }
+  .score-display {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .score-badge {
+    background: var(--dirt);
+    color: var(--sun);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    font-family: 'Fredoka One', cursive;
+  }
+
+  /* SCENE VISUAL */
+  .scene {
+    background: linear-gradient(180deg, #D4B896 0%, #C4956A 100%);
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.2);
+    border: 3px solid #8B5E3C;
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    min-height: 130px;
+    overflow: hidden;
+    position: relative;
+  }
+  .dirt-pile {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  .dirt-block {
+    width: 28px;
+    background: linear-gradient(180deg, #6B3F20, #8B5E3C);
+    border-radius: 4px 4px 0 0;
+    border: 2px solid #4a2800;
+    transition: height 0.5s cubic-bezier(.34,1.56,.64,1);
+    position: relative;
+  }
+  .dirt-block::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    right: 4px;
+    height: 3px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+  }
+  .amy-figure {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 3rem;
+    position: relative;
+    transition: transform 0.3s;
+  }
+  .amy-figure.carrying { animation: walk 0.5s ease-in-out infinite alternate; }
+  @keyframes walk {
+    from { transform: translateY(0) rotate(-2deg); }
+    to { transform: translateY(-6px) rotate(2deg); }
+  }
+  .bucket-visual {
+    font-size: 1.6rem;
+    position: absolute;
+    top: 5px;
+    right: -20px;
+    animation: swing 1s ease-in-out infinite alternate;
+  }
+  @keyframes swing {
+    from { transform: rotate(-10deg); }
+    to { transform: rotate(10deg); }
+  }
+  .cubic-counter {
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 1.4rem;
+    font-family: 'Fredoka One', cursive;
+    text-align: center;
+    min-width: 90px;
+  }
+  .cubic-counter .label { font-size: 0.65rem; font-weight: 600; opacity: 0.8; }
+
+  /* TABLE */
+  .table-section {
+    background: rgba(255,255,255,0.92);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    border: 2px solid rgba(255,255,255,0.9);
+  }
+  .table-section h3 {
+    font-family: 'Fredoka One', cursive;
+    color: var(--dirt);
+    font-size: 1rem;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 4px;
+  }
+  th {
+    background: linear-gradient(135deg, #8B5E3C, #6B3F20);
+    color: var(--sun);
+    font-family: 'Fredoka One', cursive;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+  td {
+    text-align: center;
+    padding: 8px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s;
+  }
+  .td-x { background: #E8F4FD; color: #2C6BAC; border: 2px solid #B0D4F1; }
+  .td-y { background: #FEF3E2; color: #8B5E3C; border: 2px solid #F5D5A8; }
+  .td-highlight { animation: flash-row 0.6s ease; }
+  @keyframes flash-row {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); background: #FFE082; }
+  }
+
+  /* QUESTION CARD */
+  .question-card {
+    background: linear-gradient(135deg, #FFF9F0, #FFFBF5);
+    border-radius: 20px;
+    padding: 18px 20px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+    border: 3px solid var(--sun);
+    position: relative;
+    overflow: hidden;
+  }
+  .question-card::before {
+    content: '📋';
+    position: absolute;
+    top: -10px;
+    right: 16px;
+    font-size: 2rem;
+    opacity: 0.15;
+    transform: rotate(10deg);
+  }
+  .question-number {
+    display: inline-block;
+    background: var(--sun);
+    color: var(--text-dark);
+    font-family: 'Fredoka One', cursive;
+    border-radius: 20px;
+    padding: 2px 12px;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  .question-text {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .question-text em {
+    color: var(--bucket-dark);
+    font-style: normal;
+    font-weight: 800;
+  }
+
+  /* ANSWER TYPES */
+  .answer-area { display: flex; flex-direction: column; gap: 10px; }
+
+  /* Multiple choice */
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .choice-btn {
+    background: white;
+    border: 3px solid #D4B896;
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-dark);
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .choice-btn:hover:not(:disabled) {
+    border-color: var(--bucket);
+    background: #EBF5FF;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74,144,217,0.2);
+  }
+  .choice-btn .letter {
+    background: var(--dirt);
+    color: white;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    font-family: 'Fredoka One', cursive;
+  }
+  .choice-btn.correct { background: #E8F5E9; border-color: var(--correct); }
+  .choice-btn.correct .letter { background: var(--correct); }
+  .choice-btn.wrong { background: #FFEBEE; border-color: var(--wrong); }
+  .choice-btn.wrong .letter { background: var(--wrong); }
+  .choice-btn:disabled { cursor: default; }
+
+  /* Fill-in-blank */
+  .equation-builder {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    background: #F5F0EB;
+    border-radius: 14px;
+    padding: 14px;
+    border: 2px dashed #D4B896;
+  }
+  .eq-part {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: var(--dirt);
+  }
+  .eq-input {
+    width: 70px;
+    height: 46px;
+    border: 3px solid #8B5E3C;
+    border-radius: 10px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    text-align: center;
+    color: var(--bucket-dark);
+    background: white;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .eq-input:focus { border-color: var(--bucket); box-shadow: 0 0 0 3px rgba(74,144,217,0.2); }
+  .eq-input.correct-input { border-color: var(--correct); background: #E8F5E9; color: var(--correct); }
+  .eq-input.wrong-input { border-color: var(--wrong); background: #FFEBEE; color: var(--wrong); animation: shake 0.4s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  /* Drag and drop */
+  .drag-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .drag-equation-display {
+    background: #F5F0EB;
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    border: 2px dashed #D4B896;
+    min-height: 60px;
+  }
+  .drop-slot {
+    width: 80px;
+    height: 44px;
+    border: 3px dashed #8B5E3C;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    transition: all 0.2s;
+  }
+  .drop-slot.drag-over { border-color: var(--bucket); background: #EBF5FF; transform: scale(1.05); }
+  .drop-slot.filled { border-style: solid; border-color: var(--dirt); background: #FEF3E2; color: var(--dirt); }
+  .drag-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .drag-chip {
+    background: white;
+    border: 3px solid #8B5E3C;
+    border-radius: 10px;
+    padding: 6px 14px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    cursor: grab;
+    color: var(--dirt);
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .drag-chip:hover { background: #FEF3E2; transform: scale(1.05); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+  .drag-chip:active { cursor: grabbing; }
+  .drag-chip.used { opacity: 0.35; pointer-events: none; }
+
+  /* Simulation */
+  .sim-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .sim-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .sim-btn {
+    background: linear-gradient(135deg, #4A90D9, #2C6BAC);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 10px 20px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(44,107,172,0.3);
+  }
+  .sim-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(44,107,172,0.4); }
+  .sim-result {
+    background: #E8F4FD;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 700;
+    color: var(--bucket-dark);
+    text-align: center;
+    font-size: 0.95rem;
+    border: 2px solid #B0D4F1;
+  }
+  .sim-question {
+    background: #FEF3E2;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 700;
+    color: var(--dirt);
+    text-align: center;
+    font-size: 0.95rem;
+    border: 2px solid #F5D5A8;
+  }
+  .bucket-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .bucket-stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 3px solid #8B5E3C;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .step-btn {
+    background: var(--dirt);
+    color: white;
+    border: none;
+    width: 36px;
+    height: 36px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    font-family: 'Fredoka One', cursive;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-btn:hover { background: #6B3F20; }
+  .step-val {
+    background: white;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    color: var(--dirt);
+    width: 50px;
+    text-align: center;
+    border: none;
+    outline: none;
+  }
+
+  /* Submit button */
+  .submit-btn {
+    background: linear-gradient(135deg, #5A9E3A, #3E7A22);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 28px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(58,100,30,0.3);
+    letter-spacing: 0.5px;
+  }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(58,100,30,0.4); }
+  .submit-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+  /* Feedback */
+  .feedback {
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: none;
+    animation: pop-in 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes pop-in {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .feedback.show { display: block; }
+  .feedback.correct-fb { background: #E8F5E9; border: 2px solid var(--correct); color: #1B5E20; }
+  .feedback.wrong-fb { background: #FFEBEE; border: 2px solid var(--wrong); color: #B71C1C; }
+
+  /* NEXT BUTTON */
+  .next-btn {
+    background: linear-gradient(135deg, var(--sun), #FFA000);
+    color: var(--text-dark);
+    border: none;
+    border-radius: 14px;
+    padding: 12px 28px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(255,160,0,0.3);
+    display: none;
+    margin-top: 8px;
+    align-self: flex-end;
+    letter-spacing: 0.5px;
+  }
+  .next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(255,160,0,0.5); }
+  .next-btn.show { display: block; }
+
+  /* STANDARD BOX */
+  .standard-box {
+    background: rgba(255,255,255,0.75);
+    border-radius: 12px;
+    padding: 8px 14px;
+    font-size: 0.75rem;
+    color: #555;
+    text-align: center;
+    border: 1px solid rgba(0,0,0,0.1);
+    font-weight: 600;
+  }
+
+  /* VICTORY SCREEN */
+  .victory-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    background: linear-gradient(135deg, #FFF9E0, #FFFDF7);
+    border-radius: 24px;
+    padding: 32px 24px;
+    border: 4px solid var(--sun);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    text-align: center;
+    animation: pop-in 0.5s cubic-bezier(.34,1.56,.64,1);
+  }
+  .victory-screen.show { display: flex; }
+  .victory-emoji { font-size: 4rem; animation: bounce 0.6s ease-in-out infinite alternate; }
+  @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-16px); } }
+  .victory-title { font-family: 'Fredoka One', cursive; font-size: 2rem; color: var(--dirt); }
+  .victory-score { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--bucket-dark); }
+  .victory-msg { font-weight: 700; color: #555; max-width: 400px; line-height: 1.5; }
+  .replay-btn {
+    background: linear-gradient(135deg, #8B5E3C, #6B3F20);
+    color: var(--sun);
+    border: none;
+    border-radius: 16px;
+    padding: 14px 32px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  .replay-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
+
+  /* Stars */
+  .stars { display: flex; gap: 8px; font-size: 2rem; }
+  .star { transition: transform 0.3s; }
+  .star.earned { animation: star-pop 0.5s cubic-bezier(.34,1.56,.64,1) forwards; }
+  @keyframes star-pop { from { transform: scale(0); } to { transform: scale(1); } }
+
+  /* Confetti */
+  .confetti-piece {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    animation: confetti-fall linear forwards;
+    z-index: 100;
+    pointer-events: none;
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sun"></div>
+<div class="cloud cloud-1"></div>
+<div class="cloud cloud-2"></div>
+
+<div class="game-wrapper" id="gameWrapper">
+
+  <div class="header">
+    <h1>🪣 Amy's Dirt Moving Adventure!</h1>
+    <p>Help Amy figure out the math behind moving 100 cubic feet of dirt!</p>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-section">
+    <div class="progress-label">
+      <span>⛏️ Progress</span>
+      <span id="progressText">0 of 5 challenges</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%">
+        <span id="progressPct"></span>
+      </div>
+    </div>
+    <div class="score-display">
+      <div class="score-badge">⭐ Score: <span id="scoreVal">0</span></div>
+      <div class="score-badge">🪣 Buckets: <span id="bucketsVal">0</span></div>
+    </div>
+  </div>
+
+  <!-- SCENE -->
+  <div class="scene" id="scene">
+    <div class="dirt-pile" id="dirtPile"></div>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+      <div class="amy-figure" id="amyFigure">🧑‍🌾
+        <div class="bucket-visual">🪣</div>
+      </div>
+    </div>
+    <div class="cubic-counter" id="cubicCounter">
+      <div id="cubicNum">0</div>
+      <div class="label">cubic ft moved</div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-section">
+    <h3>📊 Amy's Tracking Table</h3>
+    <table id="dataTable">
+      <tr>
+        <th>Bucket Fills (x)</th>
+        <th>Cubic Feet Moved (y)</th>
+      </tr>
+      <tr>
+        <td class="td-x" id="x1">1</td>
+        <td class="td-y" id="y1">3</td>
+      </tr>
+      <tr>
+        <td class="td-x" id="x2">2</td>
+        <td class="td-y" id="y2">6</td>
+      </tr>
+      <tr>
+        <td class="td-x" id="x3">3</td>
+        <td class="td-y" id="y3">9</td>
+      </tr>
+      <tr>
+        <td class="td-x" id="x4">4</td>
+        <td class="td-y" id="y4">12</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- QUESTION AREA -->
+  <div id="questionArea">
+    <div class="question-card" id="questionCard">
+      <div class="question-number" id="qNumber">Challenge 1 of 5</div>
+      <div class="question-text" id="questionText"></div>
+      <div class="answer-area" id="answerArea"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Challenge →</button>
+    </div>
+  </div>
+
+  <!-- VICTORY -->
+  <div class="victory-screen" id="victoryScreen">
+    <div class="victory-emoji">🎉</div>
+    <div class="victory-title">Amazing Work!</div>
+    <div class="stars" id="victoryStars">
+      <span class="star" id="s1">⭐</span>
+      <span class="star" id="s2">⭐</span>
+      <span class="star" id="s3">⭐</span>
+    </div>
+    <div class="victory-score">Score: <span id="finalScore">0</span> / 5</div>
+    <div class="victory-msg" id="victoryMsg"></div>
+    <button class="replay-btn" onclick="restartGame()">🔄 Play Again</button>
+  </div>
+
+  <div class="standard-box">
+    📐 CA Math Standard: 6.EE.C.9 — Use variables to represent two quantities, write equations, and analyze relationships in tables (MP: Reason abstractly & quantitatively)
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    type: 'mc',
+    text: 'Look at the table. Each time Amy fills the bucket, how many cubic feet of dirt does she move?',
+    choices: ['2 cubic feet', '3 cubic feet', '4 cubic feet', '6 cubic feet'],
+    correct: 1,
+    feedback_correct: '✅ Yes! Each bucket holds exactly 3 cubic feet. You can see 1→3, 2→6, 3→9... the pattern is +3 each time!',
+    feedback_wrong: '❌ Look at x=1, y=3. When she fills it 1 time, she moves 3 cubic feet. That means each bucket = 3 cubic feet!',
+    bucketX: 1, bucketY: 3
+  },
+  {
+    type: 'dragdrop',
+    text: 'Build the equation that shows the relationship! Drag the correct number into the box. y = ___ × x',
+    slots: ['__'],
+    options: ['2', '3', '5', '10', '33'],
+    answers: ['3'],
+    feedback_correct: '✅ Perfect! y = 3x because Amy moves 3 cubic feet for EVERY bucket fill!',
+    feedback_wrong: '❌ Remember: when x=1, y=3. What number times 1 equals 3? That number goes in the box!',
+    bucketX: 2, bucketY: 6
+  },
+  {
+    type: 'fillin',
+    text: 'Using the equation y = 3x, if Amy fills the bucket <em>7 times</em>, how many cubic feet will she have moved?',
+    answer: '21',
+    placeholder: '?',
+    unit: 'cubic feet',
+    feedback_correct: '✅ Brilliant! 7 × 3 = 21 cubic feet. The equation y = 3x works perfectly!',
+    feedback_wrong: '❌ Substitute x=7 into y = 3x: y = 3 × 7 = 21 cubic feet.',
+    bucketX: 7, bucketY: 21
+  },
+  {
+    type: 'mc',
+    text: 'Amy needs to move 100 cubic feet total. Using y = 3x, which equation would you solve to find how many bucket fills she needs?',
+    choices: ['100 = x + 3', '100 = 3x', '100 = x ÷ 3', '100 = 3 + x'],
+    correct: 1,
+    feedback_correct: '✅ Correct! Replace y with 100 to get 100 = 3x. Now she can solve for x!',
+    feedback_wrong: '❌ In the equation y = 3x, replace y with 100 (total dirt needed). That gives 100 = 3x.',
+    bucketX: 4, bucketY: 12
+  },
+  {
+    type: 'simulation',
+    text: 'Final Challenge! Amy has moved <em>87 cubic feet</em> so far. Use the equation y = 3x to figure out how many total bucket fills that took. Enter x below.',
+    simAnswer: '29',
+    simLabel: 'bucket fills',
+    feedback_correct: '✅ Outstanding! 87 ÷ 3 = 29 fills. You\'re a proportional relationship expert! Amy is almost done — only 13 more cubic feet to go!',
+    feedback_wrong: '❌ Solve 87 = 3x → x = 87 ÷ 3 = 29 bucket fills.',
+    bucketX: 29, bucketY: 87
+  }
+];
+
+let currentQ = 0;
+let score = 0;
+let totalBuckets = 0;
+let answered = false;
+
+function initDirtPile() {
+  const pile = document.getElementById('dirtPile');
+  pile.innerHTML = '';
+  for (let i = 0; i < 10; i++) {
+    const block = document.createElement('div');
+    block.className = 'dirt-block';
+    block.style.height = '8px';
+    pile.appendChild(block);
+  }
+}
+
+function animateScene(bucketX, bucketY) {
+  totalBuckets = bucketX;
+  document.getElementById('bucketsVal').textContent = bucketX;
+  
+  // Animate cubic counter
+  const counter = document.getElementById('cubicNum');
+  let cur = parseInt(counter.textContent) || 0;
+  const target = bucketY;
+  const step = Math.ceil(Math.abs(target - cur) / 20);
+  const dir = target > cur ? 1 : -1;
+  
+  const interval = setInterval(() => {
+    cur += dir * step;
+    if ((dir > 0 && cur >= target) || (dir < 0 && cur <= target)) {
+      cur = target;
+      clearInterval(interval);
+    }
+    counter.textContent = cur;
+  }, 40);
+
+  // Animate dirt blocks
+  const blocks = document.querySelectorAll('.dirt-block');
+  const maxH = 90;
+  const pct = Math.min(bucketY / 100, 1);
+  blocks.forEach((b, i) => {
+    setTimeout(() => {
+      b.style.height = Math.max(8, pct * maxH * (0.7 + Math.random() * 0.6)) + 'px';
+    }, i * 30);
+  });
+
+  // Walk animation
+  const amy = document.getElementById('amyFigure');
+  amy.classList.add('carrying');
+  setTimeout(() => amy.classList.remove('carrying'), 2000);
+}
+
+function renderQuestion() {
+  answered = false;
+  const q = questions[currentQ];
+  document.getElementById('qNumber').textContent = `Challenge ${currentQ+1} of ${questions.length}`;
+  document.getElementById('questionText').innerHTML = q.text;
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('nextBtn').className = 'next-btn';
+  
+  const area = document.getElementById('answerArea');
+  area.innerHTML = '';
+
+  // Update progress
+  const pct = (currentQ / questions.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct > 0 ? Math.round(pct) + '%' : '';
+  document.getElementById('progressText').textContent = `${currentQ} of ${questions.length} challenges`;
+
+  if (q.type === 'mc') renderMC(q, area);
+  else if (q.type === 'dragdrop') renderDragDrop(q, area);
+  else if (q.type === 'fillin') renderFillIn(q, area);
+  else if (q.type === 'simulation') renderSim(q, area);
+}
+
+function renderMC(q, area) {
+  const grid = document.createElement('div');
+  grid.className = 'choices';
+  const letters = ['A','B','C','D'];
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="letter">${letters[i]}</span>${c}`;
+    btn.onclick = () => {
+      if (answered) return;
+      answered = true;
+      grid.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+      if (i === q.correct) {
+        btn.classList.add('correct');
+        showFeedback(true, q.feedback_correct);
+        score++;
+        document.getElementById('scoreVal').textContent = score;
+        animateScene(q.bucketX, q.bucketY);
+      } else {
+        btn.classList.add('wrong');
+        grid.querySelectorAll('.choice-btn')[q.correct].classList.add('correct');
+        showFeedback(false, q.feedback_wrong);
+      }
+      document.getElementById('nextBtn').classList.add('show');
+    };
+    grid.appendChild(btn);
+  });
+  area.appendChild(grid);
+}
+
+function renderDragDrop(q, area) {
+  const zone = document.createElement('div');
+  zone.className = 'drag-zone';
+
+  const display = document.createElement('div');
+  display.className = 'drag-equation-display';
+  display.innerHTML = `<span class="eq-part">y =</span>`;
+
+  const slot = document.createElement('div');
+  slot.className = 'drop-slot';
+  slot.dataset.index = 0;
+  slot.dataset.filled = '';
+  slot.textContent = '?';
+  slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('drag-over'); });
+  slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+  slot.addEventListener('drop', e => {
+    e.preventDefault();
+    slot.classList.remove('drag-over');
+    const val = e.dataTransfer.getData('text');
+    slot.textContent = val;
+    slot.dataset.filled = val;
+    slot.classList.add('filled');
+    document.querySelectorAll('.drag-chip').forEach(ch => {
+      if (ch.dataset.val === val) ch.classList.add('used');
+    });
+  });
+  display.appendChild(slot);
+  display.innerHTML += `<span class="eq-part">× x</span>`;
+  display.appendChild(slot); // re-append
+  
+  // rebuild since innerHTML overwrites
+  display.innerHTML = '';
+  const eqPre = document.createElement('span');
+  eqPre.className = 'eq-part';
+  eqPre.textContent = 'y = ';
+  display.appendChild(eqPre);
+  display.appendChild(slot);
+  const eqPost = document.createElement('span');
+  eqPost.className = 'eq-part';
+  eqPost.textContent = ' × x';
+  display.appendChild(eqPost);
+
+  const optRow = document.createElement('div');
+  optRow.className = 'drag-options';
+  q.options.forEach(opt => {
+    const chip = document.createElement('div');
+    chip.className = 'drag-chip';
+    chip.dataset.val = opt;
+    chip.textContent = opt;
+    chip.draggable = true;
+    chip.addEventListener('dragstart', e => e.dataTransfer.setData('text', opt));
+    // Touch support
+    chip.addEventListener('click', () => {
+      if (answered) return;
+      if (!slot.dataset.filled) {
+        slot.textContent = opt;
+        slot.dataset.filled = opt;
+        slot.classList.add('filled');
+        chip.classList.add('used');
+      }
+    });
+    optRow.appendChild(chip);
+  });
+
+  const submitBtn = document.createElement('button');
+  submitBtn.className = 'submit-btn';
+  submitBtn.textContent = '✓ Check Answer';
+  submitBtn.onclick = () => {
+    if (answered) return;
+    const filled = slot.dataset.filled;
+    if (!filled) { showFeedback(false, '⚠️ Drag a number into the box first!'); return; }
+    answered = true;
+    submitBtn.disabled = true;
+    if (filled === q.answers[0]) {
+      slot.style.borderColor = 'var(--correct)';
+      slot.style.background = '#E8F5E9';
+      showFeedback(true, q.feedback_correct);
+      score++;
+      document.getElementById('scoreVal').textContent = score;
+      animateScene(q.bucketX, q.bucketY);
+    } else {
+      slot.style.borderColor = 'var(--wrong)';
+      slot.style.background = '#FFEBEE';
+      showFeedback(false, q.feedback_wrong);
+    }
+    document.getElementById('nextBtn').classList.add('show');
+  };
+
+  zone.appendChild(display);
+  zone.appendChild(optRow);
+  zone.appendChild(submitBtn);
+  area.appendChild(zone);
+}
+
+function renderFillIn(q, area) {
+  const builder = document.createElement('div');
+  builder.className = 'equation-builder';
+  builder.innerHTML = `<span class="eq-part">y = 3 ×</span>`;
+  
+  const xSpan = document.createElement('span');
+  xSpan.className = 'eq-part';
+  xSpan.textContent = '7 =';
+  builder.appendChild(xSpan);
+
+  const input = document.createElement('input');
+  input.className = 'eq-input';
+  input.type = 'number';
+  input.placeholder = q.placeholder;
+  input.setAttribute('aria-label', 'Your answer');
+  builder.appendChild(input);
+
+  const unitSpan = document.createElement('span');
+  unitSpan.className = 'eq-part';
+  unitSpan.style.fontSize = '1rem';
+  unitSpan.textContent = q.unit;
+  builder.appendChild(unitSpan);
+
+  const submitBtn = document.createElement('button');
+  submitBtn.className = 'submit-btn';
+  submitBtn.textContent = '✓ Check';
+  submitBtn.style.marginTop = '8px';
+  submitBtn.onclick = () => {
+    if (answered) return;
+    const val = input.value.trim();
+    if (!val) return;
+    answered = true;
+    input.disabled = true;
+    submitBtn.disabled = true;
+    if (val === q.answer) {
+      input.classList.add('correct-input');
+      showFeedback(true, q.feedback_correct);
+      score++;
+      document.getElementById('scoreVal').textContent = score;
+      animateScene(q.bucketX, q.bucketY);
+    } else {
+      input.classList.add('wrong-input');
+      showFeedback(false, q.feedback_wrong);
+    }
+    document.getElementById('nextBtn').classList.add('show');
+  };
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') submitBtn.click(); });
+
+  area.appendChild(builder);
+  area.appendChild(submitBtn);
+}
+
+function renderSim(q, area) {
+  const zone = document.createElement('div');
+  zone.className = 'sim-zone';
+
+  const qBox = document.createElement('div');
+  qBox.className = 'sim-question';
+  qBox.textContent = '🪣 How many bucket fills does it take to move 87 cubic feet?';
+  zone.appendChild(qBox);
+
+  const hint = document.createElement('div');
+  hint.className = 'sim-result';
+  hint.textContent = '💡 Hint: Use 87 = 3x, so x = 87 ÷ 3';
+  zone.appendChild(hint);
+
+  const row = document.createElement('div');
+  row.className = 'bucket-input-row';
+  row.innerHTML = `<span style="font-weight:700; color:var(--dirt);">x =</span>`;
+  
+  const stepper = document.createElement('div');
+  stepper.className = 'bucket-stepper';
+  
+  const minusBtn = document.createElement('button');
+  minusBtn.className = 'step-btn';
+  minusBtn.textContent = '−';
+  
+  const valEl = document.createElement('div');
+  valEl.className = 'step-val';
+  valEl.textContent = '0';
+
+  const plusBtn = document.createElement('button');
+  plusBtn.className = 'step-btn';
+  plusBtn.textContent = '+';
+
+  let val = 0;
+  minusBtn.onclick = () => { val = Math.max(0, val-1); valEl.textContent = val; updatePreview(); };
+  plusBtn.onclick = () => { val = Math.min(50, val+1); valEl.textContent = val; updatePreview(); };
+
+  stepper.appendChild(minusBtn);
+  stepper.appendChild(valEl);
+  stepper.appendChild(plusBtn);
+
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.className = 'eq-input';
+  input.placeholder = '?';
+  input.min = 0;
+  input.max = 100;
+  input.value = '';
+  input.style.width = '80px';
+  input.addEventListener('input', () => { val = parseInt(input.value)||0; valEl.textContent = val; updatePreview(); });
+
+  row.appendChild(stepper);
+  row.appendChild(input);
+  zone.appendChild(row);
+
+  const preview = document.createElement('div');
+  preview.className = 'sim-result';
+  preview.textContent = 'Dirt moved: 0 cubic feet';
+  zone.appendChild(preview);
+
+  function updatePreview() {
+    input.value = val;
+    valEl.textContent = val;
+    preview.textContent = `Dirt moved: ${val} × 3 = ${val*3} cubic feet`;
+    if (val * 3 === 87) {
+      preview.style.background = '#E8F5E9';
+      preview.style.borderColor = 'var(--correct)';
+    } else {
+      preview.style.background = '#E8F4FD';
+      preview.style.borderColor = '#B0D4F1';
+    }
+  }
+
+  const submitBtn = document.createElement('button');
+  submitBtn.className = 'submit-btn';
+  submitBtn.textContent = '✓ Submit Answer';
+  submitBtn.onclick = () => {
+    if (answered) return;
+    if (val === 0) { showFeedback(false, '⚠️ Enter a number greater than 0!'); return; }
+    answered = true;
+    submitBtn.disabled = true;
+    minusBtn.disabled = true;
+    plusBtn.disabled = true;
+    input.disabled = true;
+    if (String(val) === q.simAnswer) {
+      showFeedback(true, q.feedback_correct);
+      score++;
+      document.getElementById('scoreVal').textContent = score;
+      animateScene(q.bucketX, q.bucketY);
+    } else {
+      showFeedback(false, q.feedback_wrong);
+    }
+    document.getElementById('nextBtn').classList.add('show');
+  };
+
+  zone.appendChild(submitBtn);
+  area.appendChild(zone);
+}
+
+function showFeedback(correct, msg) {
+  const fb = document.getElementById('feedback');
+  fb.textContent = msg;
+  fb.className = 'feedback show ' + (correct ? 'correct-fb' : 'wrong-fb');
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    showVictory();
+  } else {
+    renderQuestion();
+    const q = questions[currentQ];
+    if (q.bucketX) animateScene(q.bucketX, q.bucketY);
+  }
+}
+
+function showVictory() {
+  document.getElementById('questionArea').style.display = 'none';
+  
+  const vs = document.getElementById('victoryScreen');
+  vs.classList.add('show');
+  document.getElementById('finalScore').textContent = score;
+
+  // Progress bar to 100%
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressPct').textContent = '100%';
+  document.getElementById('progressText').textContent = `${questions.length} of ${questions.length} challenges`;
+
+  const stars = score >= 5 ? 3 : score >= 3 ? 2 : 1;
+  const starEls = ['s1','s2','s3'];
+  const msgs = [
+    "Amy needs your help! Review the equation y = 3x and try again!",
+    "Good start! You understand the pattern. Keep practicing the equation!",
+    "Well done! You have a strong grasp of proportional relationships!",
+    "Excellent! You can write and use the equation y = 3x like a pro!",
+    "🏆 Perfect score! You're a proportional relationships MASTER! Amy's dirt is moved!"
+  ];
+  document.getElementById('victoryMsg').textContent = msgs[score];
+
+  starEls.forEach((id, i) => {
+    if (i < stars) {
+      setTimeout(() => {
+        document.getElementById(id).classList.add('earned');
+        document.getElementById(id).textContent = '⭐';
+      }, 300 + i * 300);
+    } else {
+      document.getElementById(id).textContent = '☆';
+    }
+  });
+
+  if (score >= 4) launchConfetti();
+  animateScene(33, 99);
+}
+
+function launchConfetti() {
+  const colors = ['#FFD700','#5A9E3A','#4A90D9','#FF9800','#E91E63','#8B5E3C'];
+  for (let i = 0; i < 60; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.top = '-20px';
+      el.style.background = colors[Math.floor(Math.random()*colors.length)];
+      el.style.width = (Math.random() * 10 + 6) + 'px';
+      el.style.height = (Math.random() * 10 + 6) + 'px';
+      el.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
+      el.style.animationDelay = (Math.random() * 0.5) + 's';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }, i * 40);
+  }
+}
+
+function restartGame() {
+  currentQ = 0;
+  score = 0;
+  totalBuckets = 0;
+  answered = false;
+  document.getElementById('scoreVal').textContent = 0;
+  document.getElementById('bucketsVal').textContent = 0;
+  document.getElementById('victoryScreen').classList.remove('show');
+  document.getElementById('questionArea').style.display = '';
+  document.getElementById('cubicNum').textContent = '0';
+  initDirtPile();
+  renderQuestion();
+}
+
+// INIT
+initDirtPile();
+renderQuestion();
+animateScene(1, 3);
+</script>
+</body>
+</html>
